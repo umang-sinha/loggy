@@ -1,0 +1,8 @@
+# Client
+
+node_modules/
+dist/
+
+# Repo
+
+.vscode/
