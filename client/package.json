@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "loggy-client",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,10 +11,14 @@
   "author": "umang-sinha",
   "license": "ISC",
   "devDependencies": {
+    "@types/ioredis": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.9",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.6",
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "ioredis": "^5.6.0"
   }
 }
