@@ -29,26 +29,14 @@ export class Loggy {
       timestamp: new Date().toISOString(),
     };
 
-    try {
-      await this.redis.addLog(this.redisKey, logEntry);
-    } catch (err) {
-      console.error(`Failed to add log to redis. Retrying...`);
-      let numRetries = this.retries;
-      while (numRetries > 0) {
-        try {
-          await this.redis.addLog(this.redisKey, logEntry);
-          console.log(`Log added to Redis after retry`);
-          break;
-        } catch (retryErr) {
-          numRetries--;
-          if (numRetries === 0) {
-            console.log(
-              `Failed to add log to Redis after ${this.retries} retries`
-            );
-          }
-        }
+    //fire and forget
+    (async () => {
+      try {
+        await this.redis.addLog(this.redisKey, logEntry);
+      } catch (err) {
+        console.error(`Log failed`, err);
       }
-    }
+    })();
   }
 
   private async flush() {}

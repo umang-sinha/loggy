@@ -62,7 +62,7 @@ export class RedisClient {
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= 2;
+        delay *= 2; //exponential backoff
         retries--;
       }
     }
