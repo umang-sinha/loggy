@@ -6,7 +6,7 @@ export interface KafkaConfig {
   clientId?: string;
 }
 
-export type logLevel = "INFO" | "DEBUG" | "WARN" | "ERROR";
+export type logLevel = "INFO" | "DEBUG" | "WARN" | "ERROR" | "TRACE" | "FATAL";
 
 export interface LogEntry {
   requestId: string;
@@ -18,4 +18,6 @@ export interface LogEntry {
 
 export interface LoggyConfig {
   kafkaConfig: KafkaConfig;
+  numSendWorkers?: number;
+  maxBufferSize?: number;
 }
