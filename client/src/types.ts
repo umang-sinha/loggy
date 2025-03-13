@@ -6,11 +6,11 @@ export interface KafkaConfig {
   clientId?: string;
 }
 
-export type logLevel = "INFO" | "DEBUG" | "WARN" | "ERROR" | "TRACE" | "FATAL";
+export type LogLevel = "INFO" | "DEBUG" | "WARN" | "ERROR" | "TRACE" | "FATAL";
 
 export interface LogEntry {
   requestId: string;
-  level: logLevel;
+  level: LogLevel;
   message: string;
   metadata?: object;
   timestamp: string;
