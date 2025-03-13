@@ -1,6 +1,13 @@
-import { Kafka, Message, Partitioners, Producer, Admin } from "kafkajs";
+import {
+  Kafka,
+  Message,
+  Partitioners,
+  Producer,
+  Admin,
+  CompressionTypes,
+} from "kafkajs";
 import { KAFKA_DEFAULTS } from "../constants/kafkaDefaults";
-import { KafkaConfig, LogEntry, logLevel } from "../types";
+import { KafkaConfig, LogEntry } from "../types";
 
 export class KafkaClient {
   private static instance: KafkaClient;
@@ -39,7 +46,6 @@ export class KafkaClient {
         client.numPartitions,
         client.replicationFactor
       );
-      await client.connect();
       KafkaClient.instance = client;
     }
 
@@ -102,39 +108,24 @@ export class KafkaClient {
     await this.admin.disconnect();
   }
 
-  async sendLog(
-    requestId: string,
-    level: logLevel,
-    message: string,
-    metadata?: object
-  ) {
-    const logEntry: LogEntry = {
-      requestId,
-      level,
-      message,
-      metadata,
-      timestamp: new Date().toISOString(),
-    };
-
-    const kafkaMessage: Message = {
-      key: requestId,
-      value: JSON.stringify(logEntry),
-    };
+  public async sendBatch(logEntries: LogEntry[]) {
+    const messages: Message[] = logEntries.map((log) => ({
+      key: log.requestId,
+      value: JSON.stringify(log),
+    }));
 
     await this.producer.send({
       topic: this.topic,
-      messages: [kafkaMessage],
+      messages,
+      compression: CompressionTypes.GZIP, // compress for efficiency
     });
-    console.log(`SENT!!`);
   }
 
-  async connect() {
+  public async connect() {
     await this.producer.connect();
-    console.log(`CONNECTED!!`);
   }
 
-  async disconnect() {
+  public async disconnect() {
     await this.producer.disconnect();
-    console.log(`DISCONNECTED!!`);
   }
 }
