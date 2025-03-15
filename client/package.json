@@ -34,6 +34,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "cassandra-driver": "^4.8.0",
     "kafkajs": "^2.2.4"
   }
 }
