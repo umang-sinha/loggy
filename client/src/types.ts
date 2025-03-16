@@ -18,6 +18,16 @@ export interface LogEntry {
 
 export interface LoggyConfig {
   kafkaConfig: KafkaConfig;
+  scyllaConfig?: ScyllaConfig;
   numSendWorkers?: number;
   maxBufferSize?: number;
+  fallback?: boolean;
+}
+
+export interface ScyllaConfig {
+  contactPoints: string[];
+  keyspace: string;
+  username?: string;
+  password?: string;
+  connectionPoolSize?: number;
 }
