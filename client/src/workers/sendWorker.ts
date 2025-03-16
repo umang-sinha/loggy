@@ -1,21 +1,31 @@
 import { parentPort, workerData } from "worker_threads";
 import { KafkaClient } from "../services/kafkaClient";
-import { KafkaConfig, LogEntry } from "../types";
+import { LogEntry, LoggyConfig } from "../types";
+import { ScyllaFallback } from "../fallbacks/scylladb/scyllaFallback";
 
 if (!parentPort) throw new Error("Send worker must run in a worker thread");
 
 (async () => {
-  const kafkaConfig: KafkaConfig = workerData.kafkaConfig;
+  const loggyConfig: LoggyConfig = workerData.loggyConfig;
 
-  const kafkaClient = await KafkaClient.create(kafkaConfig);
+  const kafkaClient = await KafkaClient.create(loggyConfig.kafkaConfig);
 
   await kafkaClient.connect();
 
+  let scyllaFallback: ScyllaFallback | undefined;
+
+  if (loggyConfig.fallback && loggyConfig.scyllaConfig) {
+    scyllaFallback = await ScyllaFallback.getInstance(
+      loggyConfig.scyllaConfig!
+    );
+  }
+
   parentPort.on("message", async (batch: LogEntry[]) => {
     try {
+      if (!scyllaFallback) return;
       await kafkaClient.sendBatch(batch);
     } catch (err) {
-      console.error(`Kafka send failed:`, err);
+      if (scyllaFallback) await scyllaFallback.saveBatch(batch);
     }
   });
 })().catch((err) => {
