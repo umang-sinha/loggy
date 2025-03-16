@@ -22,12 +22,16 @@ class Loggy {
       { length: this.numSendWorkers },
       () =>
         new Worker("../workers/sendWorker.js", {
-          workerData: { kafkaConfig: this.kafkaConfig },
+          workerData: { loggyConfig: config },
         })
     );
   }
 
   public static getInstance(config: LoggyConfig): Loggy {
+    if (config.fallback && !config.scyllaConfig) {
+      throw new Error(`ScyllaConfig is required when fallback is true`);
+    }
+
     if (!Loggy.instance) {
       Loggy.instance = new Loggy(config);
     }
