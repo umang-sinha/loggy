@@ -4,7 +4,6 @@ import { Worker } from "worker_threads";
 
 class Loggy {
   private static instance: Loggy;
-  private kafkaConfig: KafkaConfig;
   private buffer: LogEntry[] = [];
   private sendWorkers: Worker[];
   private maxBufferSize: number;
@@ -12,7 +11,6 @@ class Loggy {
   private isFlushing = false;
 
   private constructor(config: LoggyConfig) {
-    this.kafkaConfig = config.kafkaConfig;
 
     this.maxBufferSize = config.maxBufferSize ?? LOGGY_DEFAULTS.MAX_BUFFER_SIZE;
     this.numSendWorkers =
