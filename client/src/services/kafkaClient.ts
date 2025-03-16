@@ -5,6 +5,7 @@ import {
   Producer,
   Admin,
   CompressionTypes,
+  logLevel,
 } from "kafkajs";
 import { KAFKA_DEFAULTS } from "../constants/kafkaDefaults";
 import { KafkaConfig, LogEntry } from "../types";
@@ -24,6 +25,10 @@ export class KafkaClient {
     this.kafka = new Kafka({
       brokers: config.brokers,
       clientId: config.clientId,
+      retry: {
+        retries: 0,
+      },
+      logLevel: logLevel.NOTHING, // disable logs from kafkajs
     });
     this.producer = this.kafka.producer({
       /**
