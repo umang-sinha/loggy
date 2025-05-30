@@ -5,10 +5,9 @@ import {
   Producer,
   Admin,
   CompressionTypes,
-  logLevel,
 } from "kafkajs";
 import { KAFKA_DEFAULTS } from "../constants/kafkaDefaults";
-import { KafkaConfig, LogEntry } from "../types";
+import { LogEntry, KafkaConfig } from "../types";
 
 export class KafkaClient {
   private static instance: KafkaClient;
@@ -20,16 +19,12 @@ export class KafkaClient {
   private replicationFactor: number;
 
   private constructor(config: KafkaConfig) {
-    this.validateConfig(config);
+    this.kafka = new Kafka(config);
 
-    this.kafka = new Kafka({
-      brokers: config.brokers,
-      clientId: config.clientId,
-      retry: {
-        retries: 0,
-      },
-      logLevel: logLevel.NOTHING, // disable logs from kafkajs
-    });
+    config.retry = {
+      retries: 0, // enforce 0 retries
+    };
+
     this.producer = this.kafka.producer({
       /**
        * If key is present, hash it and assign to a partition
@@ -40,7 +35,7 @@ export class KafkaClient {
     this.topic = config.topic;
     this.admin = this.kafka.admin();
     this.numPartitions = config.partitions ?? KAFKA_DEFAULTS.PARTITIONS;
-    this.replicationFactor = config.replicas ?? KAFKA_DEFAULTS.REPLICAS;
+    this.replicationFactor = config.replicationFactor ?? KAFKA_DEFAULTS.REPLICATION_FACTOR;
   }
 
   public static async create(config: KafkaConfig): Promise<KafkaClient> {
@@ -55,33 +50,6 @@ export class KafkaClient {
     }
 
     return KafkaClient.instance;
-  }
-
-  private validateConfig(config: KafkaConfig) {
-    if (!config.brokers || config.brokers.length === 0) {
-      throw new Error(`Atleast one Kafka broker must be provided.`);
-    }
-
-    if (!config.topic || config.topic.trim() === "") {
-      throw new Error(`Topic name must be a non-empty string`);
-    }
-
-    if (config.partitions !== undefined && config.partitions < 1) {
-      console.warn(
-        `Invalid number of partitions provided. Defaulting to ${KAFKA_DEFAULTS.PARTITIONS}`
-      );
-      config.partitions = KAFKA_DEFAULTS.PARTITIONS; //Explicitly modifying config
-    }
-
-    if (
-      config.replicas !== undefined &&
-      (config.replicas < 1 || config.replicas > config.brokers.length)
-    ) {
-      console.warn(
-        `Invalid replication factor provided. Defaulting to ${KAFKA_DEFAULTS.REPLICAS}`
-      );
-      config.replicas = KAFKA_DEFAULTS.REPLICAS; //Explicitly modifying config
-    }
   }
 
   private async createTopic(

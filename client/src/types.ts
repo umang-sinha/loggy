@@ -1,9 +1,9 @@
-export interface KafkaConfig {
-  brokers: string[];
+import { KafkaConfig as KafkaJSConfig } from "kafkajs";
+
+export interface KafkaConfig extends KafkaJSConfig {
   topic: string;
   partitions?: number;
-  replicas?: number;
-  clientId?: string;
+  replicationFactor?: number;
 }
 
 export type LogLevel = "INFO" | "DEBUG" | "WARN" | "ERROR" | "TRACE" | "FATAL";
