@@ -22,7 +22,6 @@ if (!parentPort) throw new Error("Send worker must run in a worker thread");
 
   parentPort.on("message", async (batch: LogEntry[]) => {
     try {
-      if (!scyllaFallback) return;
       await kafkaClient.sendBatch(batch);
     } catch (err) {
       if (scyllaFallback) await scyllaFallback.saveBatch(batch);

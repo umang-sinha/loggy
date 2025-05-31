@@ -1,58 +1,30 @@
-import { Client, ClientOptions, types } from "cassandra-driver";
-import { LogEntry, ScyllaConfig } from "../../types";
+import { Client, ClientOptions } from "cassandra-driver";
+import { LogEntry } from "../../types";
 import { SCYLLA_DEFAULTS } from "../../constants/scyllaDefaults";
 
 export class ScyllaFallback {
   private static instance: ScyllaFallback;
   private client: Client;
   private readonly clientOptions: ClientOptions;
-  private connectionPoolSize: number;
 
-  private constructor(config: ScyllaConfig) {
-    this.validateConfig(config);
+  private constructor(config: ClientOptions) {
+    if (!config.keyspace) {
+      throw new Error(`keyspace should be provided!`);
+    }
 
-    this.connectionPoolSize =
-      config.connectionPoolSize ?? SCYLLA_DEFAULTS.CONNECTION_POOL_SIZE;
+    if (!config.localDataCenter) {
+      config.localDataCenter = SCYLLA_DEFAULTS.LOCAL_DATACENTER;
+    }
 
     this.clientOptions = {
-      contactPoints: config.contactPoints,
-      localDataCenter: "datacenter1",
-      keyspace: config.keyspace,
-      credentials:
-        config.username && config.password
-          ? { username: config.username, password: config.password }
-          : undefined,
-      pooling: {
-        coreConnectionsPerHost: {
-          [types.distance.local]: this.connectionPoolSize,
-        },
-      },
+      ...config,
     };
+
     this.client = new Client(this.clientOptions);
   }
 
-  private validateConfig(config: ScyllaConfig) {
-    if (!config.contactPoints || config.contactPoints.length === 0) {
-      throw new Error(`Atleast one contact point must be provided`);
-    }
-
-    if (!config.keyspace || config.keyspace.trim() === "") {
-      throw new Error(`Keyspace name must be a non-empty string`);
-    }
-
-    if (
-      config.connectionPoolSize !== undefined &&
-      config.connectionPoolSize < 1
-    ) {
-      console.warn(
-        `Invalid connection pool size provided. Defaulting to ${SCYLLA_DEFAULTS.CONNECTION_POOL_SIZE}`
-      );
-      config.connectionPoolSize = SCYLLA_DEFAULTS.CONNECTION_POOL_SIZE;
-    }
-  }
-
   public static async getInstance(
-    config: ScyllaConfig
+    config: ClientOptions
   ): Promise<ScyllaFallback> {
     if (!ScyllaFallback.instance) {
       ScyllaFallback.instance = new ScyllaFallback(config);
@@ -101,7 +73,9 @@ export class ScyllaFallback {
         ) WITH CLUSTERING ORDER BY (id ASC);
     `;
 
-    await this.client.execute(tableCreationQuery, [], { prepare: false });
+    await this.client.execute(tableCreationQuery, [], {
+      prepare: false,
+    });
   }
 
   public async saveBatch(batch: LogEntry[]) {

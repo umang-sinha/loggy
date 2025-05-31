@@ -1,4 +1,5 @@
 import { KafkaConfig as KafkaJSConfig } from "kafkajs";
+import { ClientOptions } from "cassandra-driver";
 
 export interface KafkaConfig extends KafkaJSConfig {
   topic: string;
@@ -14,20 +15,14 @@ export interface LogEntry {
   message: string;
   metadata?: object;
   timestamp: string;
+  id?: string;
 }
 
 export interface LoggyConfig {
   kafkaConfig: KafkaConfig;
-  scyllaConfig?: ScyllaConfig;
+  scyllaConfig?: ClientOptions;
   numSendWorkers?: number;
   maxBufferSize?: number;
   fallback?: boolean;
 }
 
-export interface ScyllaConfig {
-  contactPoints: string[];
-  keyspace: string;
-  username?: string;
-  password?: string;
-  connectionPoolSize?: number;
-}
