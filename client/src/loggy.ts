@@ -1,6 +1,7 @@
 import { LoggyConfig, LogLevel, LogEntry, KafkaConfig } from "./types";
 import { LOGGY_DEFAULTS } from "./constants/loggyDefaults";
 import { Worker } from "worker_threads";
+import path from "path";
 
 class Loggy {
   private static instance: Loggy;
@@ -18,10 +19,17 @@ class Loggy {
     this.numSendWorkers =
       config.numSendWorkers ?? LOGGY_DEFAULTS.NUM_SEND_WORKERS;
 
+    const sendWorkerPath = path.resolve(
+      __dirname,
+      "../dist",
+      "workers",
+      "sendWorker.js"
+    );
+
     this.sendWorkers = Array.from(
       { length: this.numSendWorkers },
       () =>
-        new Worker("../workers/sendWorker.js", {
+        new Worker(sendWorkerPath, {
           workerData: { loggyConfig: config },
         })
     );
