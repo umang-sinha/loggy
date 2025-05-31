@@ -3,3 +3,4 @@ import { LoggyConfig } from "./types";
 
 export { Loggy, LoggyConfig };
 export * from "./kafkajsExports";
+export * from "./cassandraDriverExports";
