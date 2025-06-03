@@ -8,6 +8,7 @@ class Loggy {
   private kafkaConfig: KafkaConfig;
   private buffer: LogEntry[] = [];
   private sendWorkers: Worker[];
+  private retryWorker: Worker | undefined;
   private maxBufferSize: number;
   private numSendWorkers: number;
   private isFlushing = false;
@@ -33,6 +34,19 @@ class Loggy {
           workerData: { loggyConfig: config },
         })
     );
+
+    if (config.fallback && config.scyllaConfig) {
+      const retryWorkerPath = path.resolve(
+        __dirname,
+        "../dist",
+        "workers",
+        "retryWorker.js"
+      );
+
+      this.retryWorker = new Worker(retryWorkerPath, {
+        workerData: { loggyConfig: config },
+      });
+    }
   }
 
   public static getInstance(config: LoggyConfig): Loggy {
