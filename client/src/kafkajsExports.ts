@@ -1,1 +1,1 @@
-export { logLevel } from "kafkajs";
+export { logLevel as kafkajsLogLevel } from "kafkajs";
