@@ -12,6 +12,7 @@ class Loggy {
   private maxBufferSize: number;
   private numSendWorkers: number;
   private isFlushing = false;
+  private flushInterval: NodeJS.Timeout | null = null;
 
   private constructor(config: LoggyConfig) {
     this.kafkaConfig = config.kafkaConfig;
@@ -47,6 +48,8 @@ class Loggy {
         workerData: { loggyConfig: config },
       });
     }
+
+    this.startFlushTimer();
   }
 
   public static getInstance(config: LoggyConfig): Loggy {
@@ -105,10 +108,23 @@ class Loggy {
     }
   }
 
+  private startFlushTimer() {
+    if (!this.flushInterval) {
+      this.flushInterval = setInterval(() => {
+        if (this.buffer.length != 0) {
+          this.flush();
+        }
+      }, LOGGY_DEFAULTS.FLUSH_INTERVAL_MS);
+    }
+  }
+
   async shutdown() {
     this.flush();
     for (const worker of this.sendWorkers) {
       await worker.terminate();
+    }
+    if (this.retryWorker) {
+      this.retryWorker.terminate();
     }
   }
 }
