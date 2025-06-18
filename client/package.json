@@ -1,7 +1,7 @@
 {
   "name": "loggy-client",
   "version": "0.1.0",
-  "description": "High-performance logging with in-memory buffer and Kafka. Uses SQLite as fallback",
+  "description": "High-performance logging with in-memory buffer and Kafka. Uses ScyllaDB as fallback",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
