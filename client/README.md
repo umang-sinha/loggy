@@ -1,5 +1,5 @@
 # loggy-client
-High-performance logging with Kafka and SQLite fallback.
+High-performance logging with Kafka and ScyllaDB fallback.
 
 ## Install
 ```bash
